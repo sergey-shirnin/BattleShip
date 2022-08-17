@@ -25,5 +25,6 @@ public class Main {
 
         // taking shots
         myGame.placeShot();
+        myGame.printBoard("showShips");
     }
 }
