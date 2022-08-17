@@ -1,6 +1,8 @@
 package battleship;
 
 import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.stream.IntStream;
 
 
@@ -42,7 +44,7 @@ public class Game {
     int[][][] allShipsCoords = new int[numOfShips][][];
 
 
-    public void printBoard() {
+    public void printBoard(String mode) {
 
         if (startUp) {
             System.out.print(space.repeat(2));
@@ -55,12 +57,17 @@ public class Game {
         System.out.println(String.join(space, colNames));
         for (int i = 0; i < gameProgress.length; i++) {
             System.out.print(rowNames[i] + space);
-            System.out.println(String.join(space, gameProgress[i]));
+            if (mode.equals("showShips")) {
+                System.out.println(String.join(space, gameProgress[i]));
+            } else if (mode.equals("hideShips")) {
+                ArrayList<String> row = new ArrayList<>(Arrays.asList(gameProgress[i]));
+                Collections.replaceAll(row, this.shipMark, this.boardFill);
+                System.out.println(String.join(space, row));
+            }
         }
     }
 
     public void setUpBoard() {
-
         this.gameProgress = new String[this.gameSize][this.gameSize];
         this.colNames = IntStream.rangeClosed(1, this.gameSize)
                 .mapToObj(String::valueOf)
@@ -69,9 +76,9 @@ public class Game {
                 .mapToObj(num -> (char) num)
                 .toArray(Character[]::new);
         for (String[] row : gameProgress) {
-            Arrays.setAll(row, i -> this.boardFill);
+            Arrays.fill(row, this.boardFill);
         }
-        printBoard();
+        printBoard("showShips");
     }
 
 
@@ -85,7 +92,7 @@ public class Game {
             int col = xyPair[1];
             gameProgress[row][col] = this.shipMark;
         }
-        printBoard();
+        printBoard("showShips");
 
         // add to all ships 3d array [[[x, y],[x, y],[x, y]], ..., ..., ... ...]
         allShipsCoords[ship.ordinal()] = shipCoords;
@@ -95,7 +102,7 @@ public class Game {
         if (gameStart) {
             System.out.printf("%nThe game starts!%n");
             gameStart = false;
-            printBoard();
+            printBoard("hideShips");
         }
 
         String[] shotOutcomes = new String[] { this.missMsg, this.hitMsg };
@@ -109,7 +116,7 @@ public class Game {
 
         // draw on board
         gameProgress[row][col] = shotMarks[shotResult];
-        printBoard();
+        printBoard("hideShips");
 
         // update all ships 3d array [[[-1, -1],[x, y],[x, y]], ..., ..., ... ...]
         for (int i = 0; i < allShipsCoords.length; i++) {
