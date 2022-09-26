@@ -16,12 +16,12 @@ public enum Ships {
         this.shipType = shipType;
         this.shipSize = shipSize;
     }
+
     public String getType() {
         return shipType;
     }
+
     public int getSize() {
         return shipSize;
     }
 }
-
-
