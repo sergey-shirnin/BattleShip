@@ -1,6 +1,5 @@
 package battleship;
 
-
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -100,5 +99,4 @@ class ShotBeyondException extends Exception {
         super(String.format("" +
                 "%nError! You entered the wrong coordinates! Try again:%n"));
     }
-    
 }
