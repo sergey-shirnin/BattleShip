@@ -1,26 +1,35 @@
 package battleship;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 
 public class User {
 
+    String playerName;
+
+    String[][] field;
+    int[][][] myShipsCoords = new int[Ships.values().length][][];
+    int[] myShipsHealth = new int[Ships.values().length];
+    List<String> myShipsSank = new ArrayList<>(List.of("Ghost"));
+
     final String space = " ";
     Scanner scanner = new Scanner(System.in);
 
-    public String[] initiateShip() {
+    String[] initiateShipPlace() {
         return scanner.nextLine().split(space);
     }
 
-    public String takeShot() {
+    String takeShot() {
         return scanner.nextLine();
     }
 
-    public String[] placeAgain() {
-        return scanner.nextLine().split(space);
-    }
+    String[] retryShipPlace() { return scanner.nextLine().split(space); }
 
-    public String shootAgain() {
-        return scanner.nextLine();
+    String retryShot() { return scanner.nextLine(); }
+
+    void setName(String name) {
+        this.playerName = name;
     }
 }
