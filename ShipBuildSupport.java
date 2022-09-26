@@ -42,5 +42,4 @@ public class ShipBuildSupport {
 
         return IntStream.rangeClosed(rowCharsAsInt[0], rowCharsAsInt[1]).toArray();
     }
-
 }
