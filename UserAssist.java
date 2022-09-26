@@ -1,7 +1,26 @@
 package battleship;
 
+import java.util.Arrays;
+import java.util.stream.IntStream;
+
 
 public class UserAssist {
+    /**
+     * UserAssist class is used as midpoint between User and Game >> User<-UserAssist->Game
+     * It's only purpose to handle exceptions by bad User input located at GameExceptions
+     *
+     * UserAssist follows this logic:
+     * 1 > take input form User
+     * 2 > keep throwing an exception kept in GameExceptions class if entry inappropriate
+     * 3 > feed valid entry to Game class
+     *
+     * UserAssist provides 2 methods:
+     * buildShip() - handling exceptions on pre-game stage
+     * takeShot() - handling exceptions while game
+     *
+     * UserAssist has no self messages and only provides those by means of exceptions
+     * UserAssist does not handle normal game messages (start game, shot results, etc.)
+     */
 
     final int unicodeA = 65;
 
@@ -10,16 +29,11 @@ public class UserAssist {
 
     User player = new User();
 
-    public int[][] buildShip(int[][][] allShipsCoords, Ships ship) {
+    public int[][] buildShip(int[][][] allShipsCoords, String shipType, int shipSize) {
 
         int[][] shipCoords;
 
-        String shipType = ship.getType();
-        int shipSize = ship.getSize();
-
-        System.out.printf(
-                "%nEnter the coordinates of the %s (%d cells):%n%n", shipType, shipSize);
-        String[] coords = player.initiateShip();
+        String[] coords = player.initiateShipPlace();
 
         boolean validShip = false;
         do {
@@ -40,7 +54,7 @@ public class UserAssist {
                 }
             } catch (ShipDesignException | ShipLengthException | ShipsProximityException e) {
                 System.out.println(e.getMessage());
-                coords = player.placeAgain();
+                coords = player.retryShipPlace();
             }
         } while (!validShip);
 
@@ -51,7 +65,6 @@ public class UserAssist {
     public int[] takeShot(int gameSize) {
 
         int[] shotCoords;
-
         String coords = player.takeShot();
 
         boolean validShot = false;
@@ -69,10 +82,52 @@ public class UserAssist {
                 }
             } catch (ShotBeyondException e) {
                 System.out.println(e.getMessage());
-                coords = player.shootAgain();
+                coords = player.retryShot();
             }
         } while (!validShot);
 
         return shotCoords;
+    }
+}
+
+class ShipBuildSupport {
+    /**
+     * UserAssist.buildShip() method support functions
+     */
+
+    public static int[][] rangesToCoords(int[] shipRowRange, int[] shipColRange) {
+
+        int i = 0;
+        int[][] shipCoords = new int[shipRowRange.length * shipColRange.length][2];
+        for (int x : shipRowRange) {
+            for (int y : shipColRange) {
+                int[] xyPair = new int[] {x, y};
+                shipCoords[i] = xyPair;
+                i++;
+            }
+        }
+        return shipCoords;
+    }
+
+    public static int[] colCoordsToRange(String[] coords) {
+
+        int[] columnInts = {
+                Integer.parseInt(coords[0].substring(1)) - 1,
+                Integer.parseInt(coords[1].substring(1)) - 1
+        };
+        Arrays.sort(columnInts);
+
+        return IntStream.rangeClosed(columnInts[0], columnInts[1]).toArray();
+    }
+
+    public static int[] rowCoordsToRange(String[] coords, int unicodeA) {
+
+        int[] rowCharsAsInt = {
+                Character.toUpperCase(coords[0].charAt(0)) - unicodeA,
+                Character.toUpperCase(coords[1].charAt(0)) - unicodeA
+        };
+        Arrays.sort(rowCharsAsInt);
+
+        return IntStream.rangeClosed(rowCharsAsInt[0], rowCharsAsInt[1]).toArray();
     }
 }
