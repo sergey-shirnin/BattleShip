@@ -17,7 +17,9 @@ public class UserAssist {
         String shipType = ship.getType();
         int shipSize = ship.getSize();
 
-        String[] coords = player.initiateShip(shipType, shipSize);
+        System.out.printf(
+                "%nEnter the coordinates of the %s (%d cells):%n%n", shipType, shipSize);
+        String[] coords = player.initiateShip();
 
         boolean validShip = false;
         do {
@@ -28,8 +30,7 @@ public class UserAssist {
 
             // check ship built is valid
             String cause = GameException.getPlacementExceptionCause(
-                    shipRowRange, shipColRange, shipSize,
-                    shipCoords, allShipsCoords);
+                    shipRowRange, shipColRange, shipSize, shipCoords, allShipsCoords);
             try {
                 switch (cause) {
                     case "design": throw new ShipDesignException();
@@ -74,5 +75,4 @@ public class UserAssist {
 
         return shotCoords;
     }
-
 }
