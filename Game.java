@@ -17,10 +17,13 @@ public class Game {
     final String hitMsg;
     final String shipMissMark;
     final String missMsg;
+    final String sankMsg;
+    final String gameOverMsg;
 
     public Game(int gameSize, String boardFill,
-                String shipMark,
-                String shipHitMark, String hitMsg, String shipMissMark, String missMsg) {
+                String shipMark, String shipHitMark, String hitMsg,
+                String shipMissMark, String missMsg, String sankMsg, String gameOverMsg) {
+
         this.gameSize = gameSize;
         this.boardFill = boardFill;
         this.shipMark = shipMark;
@@ -28,7 +31,11 @@ public class Game {
         this.hitMsg = hitMsg;
         this.shipMissMark = shipMissMark;
         this.missMsg = missMsg;
+        this.sankMsg = sankMsg;
+        this.gameOverMsg = gameOverMsg;
     }
+
+    static boolean gameOver = false;
 
     String[] colNames;
     Character[] rowNames;
@@ -42,6 +49,9 @@ public class Game {
 
     int numOfShips = Ships.values().length;
     int[][][] allShipsCoords = new int[numOfShips][][];
+
+    int[] shipsHealth = new int[Ships.values().length];
+    ArrayList<String> shipsSank = new ArrayList<>();
 
 
     public void printBoard(String mode) {
@@ -68,6 +78,7 @@ public class Game {
     }
 
     public void setUpBoard() {
+
         this.gameProgress = new String[this.gameSize][this.gameSize];
         this.colNames = IntStream.rangeClosed(1, this.gameSize)
                 .mapToObj(String::valueOf)
@@ -88,45 +99,67 @@ public class Game {
 
         // draw on board
         for (int[] xyPair : shipCoords) {
-            int row = xyPair[0];
-            int col = xyPair[1];
+            int row = xyPair[0], col = xyPair[1];
             gameProgress[row][col] = this.shipMark;
         }
         printBoard("showShips");
 
-        // add to all ships 3d array [[[x, y],[x, y],[x, y]], ..., ..., ... ...]
+        // add ship coords to all ships 3d array [[[x, y],[x, y],[x, y]], ..., ..., ... ...]
         allShipsCoords[ship.ordinal()] = shipCoords;
+
+        // add ship health(size) to all ships 1d array [5, 4, 3, ...]
+        shipsHealth[ship.ordinal()] = Ships.values()[ship.ordinal()].getSize();
+
     }
 
     public void placeShot() {
         if (gameStart) {
             System.out.printf("%nThe game starts!%n");
-            gameStart = false;
             printBoard("hideShips");
+            System.out.printf("%nTake a shot!%n%n");
+            gameStart = false;
         }
 
-        String[] shotOutcomes = new String[] { this.missMsg, this.hitMsg };
+        String[] shotOutcomes = new String[] { this.missMsg, this.hitMsg, this.sankMsg };
         String[] shotMarks = new String[] { this.shipMissMark, this.shipHitMark };
 
         int[] shotCoords = playerAssist.takeShot(gameSize);
-        int row = shotCoords[0];
-        int col = shotCoords[1];
+        int row = shotCoords[0], col = shotCoords[1];
 
-        int shotResult = 1 & Boolean.hashCode( gameProgress[row][col] == this.shipMark) >> 1;
+        int shotResult = 1 & Boolean.hashCode(Arrays.asList(this.shipMark, this.shipHitMark)
+                                                    .contains(gameProgress[row][col])) >> 1;
 
         // draw on board
         gameProgress[row][col] = shotMarks[shotResult];
         printBoard("hideShips");
 
-        // update all ships 3d array [[[-1, -1],[x, y],[x, y]], ..., ..., ... ...]
+        // update ships health
         for (int i = 0; i < allShipsCoords.length; i++) {
             for (int j = 0; j < allShipsCoords[i].length; j++) {
                 if (Arrays.equals(allShipsCoords[i][j], shotCoords)) {
                     allShipsCoords[i][j] = new int[] {-1, -1};
+                    shipsHealth[i]--;
+                    break;
                 }
             }
         }
 
-        System.out.printf("%nYou %s!%n",  shotOutcomes[shotResult]);
+        // update sank ships list
+        for (int i = 0; i < shipsHealth.length; i++) {
+            if (shipsHealth[i] == 0) {
+                shipsSank.add(Ships.values()[i].getType());
+                shipsHealth[i]--;
+                shotResult++;
+                break;
+            }
+        }
+
+        // shot result msg display
+        gameOver = shipsSank.size() == Ships.values().length;
+        if (!gameOver) {
+            System.out.printf("%n%s%n%n", shotOutcomes[shotResult]);
+        } else {
+            System.out.printf("%n%s%n", this.gameOverMsg);
+        }
     }
 }
